@@ -56,7 +56,8 @@ function collectSubreddits(slugs: string[]): string[] {
 function userAgent(): string {
   return (
     process.env.REDDIT_USER_AGENT?.trim() ||
-    "DevArena/1.0 (content aggregator; +https://github.com)"
+    // Reddit blocks many datacenter UAs; browser-like UA helps public JSON/RSS.
+    "Mozilla/5.0 (compatible; DevArena/1.0; +https://devarena-emas15s-projects.vercel.app)"
   );
 }
 
@@ -119,26 +120,98 @@ async function fetchListingOAuth(
   return json.data?.children ?? [];
 }
 
-/** Public JSON endpoint — works without Reddit OAuth apps. */
+/** Public JSON / RSS — no Reddit OAuth app required. */
 async function fetchListingPublic(
   subreddit: string,
   sort: "hot" | "new",
 ): Promise<RedditChild[]> {
-  const url = `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/${sort}.json?limit=25&raw_json=1`;
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": userAgent(),
-      Accept: "application/json",
-    },
+  const headers = {
+    "User-Agent": userAgent(),
+    Accept: "application/json,text/html;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+  };
+
+  const endpoints = [
+    `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/${sort}.json?limit=25&raw_json=1`,
+    `https://old.reddit.com/r/${encodeURIComponent(subreddit)}/${sort}.json?limit=25&raw_json=1`,
+  ];
+
+  let lastStatus = 0;
+  for (const url of endpoints) {
+    const res = await fetch(url, { headers, next: { revalidate: 0 } });
+    lastStatus = res.status;
+    if (!res.ok) continue;
+    const json = (await res.json()) as {
+      data?: { children?: RedditChild[] };
+    };
+    const children = json.data?.children ?? [];
+    if (children.length) return children;
+  }
+
+  // RSS often still works when JSON is blocked from cloud IPs.
+  const rssUrl = `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/${sort}/.rss?limit=25`;
+  const rssRes = await fetch(rssUrl, {
+    headers: { "User-Agent": userAgent(), Accept: "application/rss+xml,application/xml,text/xml,*/*" },
     next: { revalidate: 0 },
   });
+  if (!rssRes.ok) {
+    throw new Error(`r/${subreddit}/${sort} HTTP ${lastStatus || rssRes.status}`);
+  }
 
-  if (!res.ok) throw new Error(`r/${subreddit}/${sort} HTTP ${res.status}`);
+  const xml = await rssRes.text();
+  return parseRedditRss(xml, subreddit);
+}
 
-  const json = (await res.json()) as {
-    data?: { children?: RedditChild[] };
-  };
-  return json.data?.children ?? [];
+function parseRedditRss(xml: string, subreddit: string): RedditChild[] {
+  const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)];
+  const children: RedditChild[] = [];
+
+  for (const match of entries.slice(0, 25)) {
+    const block = match[1] ?? "";
+    const get = (tag: string) => {
+      const m = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"));
+      return m?.[1]?.replace(/<!\[CDATA\[|\]\]>/g, "").trim() ?? "";
+    };
+    const linkMatch =
+      block.match(/<link[^>]*href="([^"]+)"/i) ||
+      block.match(/<link>([^<]+)<\/link>/i);
+    const idRaw = get("id") || get("link") || linkMatch?.[1] || "";
+    const id =
+      idRaw.match(/\/comments\/([a-z0-9]+)/i)?.[1] ||
+      idRaw.split("/").filter(Boolean).pop() ||
+      "";
+    const title = get("title");
+    const author = get("name") || get("author") || "reddit";
+    const updated = get("updated") || get("published");
+    const content = get("content") || get("summary");
+    const permalink = linkMatch?.[1]?.includes("reddit.com")
+      ? linkMatch[1].replace(/^https?:\/\/(www\.)?reddit\.com/, "")
+      : undefined;
+
+    if (!id || !title) continue;
+    children.push({
+      kind: "t3",
+      data: {
+        id,
+        title,
+        selftext: content.replace(/<[^>]+>/g, " ").slice(0, 2000),
+        author,
+        permalink,
+        url: linkMatch?.[1],
+        created_utc: updated ? Date.parse(updated) / 1000 : undefined,
+        over_18: false,
+        thumbnail: undefined,
+        score: undefined,
+        ups: undefined,
+        num_comments: undefined,
+        subreddit,
+        subreddit_name_prefixed: `r/${subreddit}`,
+        link_flair_text: undefined,
+      },
+    });
+  }
+
+  return children;
 }
 
 function mapPost(child: RedditChild, slugs: string[]): NormalizedContent | null {
