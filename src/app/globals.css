@@ -3,19 +3,128 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f8fa;
+  --foreground: #0f1419;
+  --card: #ffffff;
+  --card-foreground: #0f1419;
+  --muted: #eef1f5;
+  --muted-foreground: #5b6573;
+  --border: #e2e7ee;
+  --accent: #0d9488;
+  --accent-foreground: #ffffff;
+  --accent-soft: #ccfbf1;
+  --ring: #14b8a6;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f1419;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --success: #059669;
+  --shadow: 0 1px 2px rgba(15, 20, 25, 0.04), 0 4px 16px rgba(15, 20, 25, 0.04);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  --background: #0b0f14;
+  --foreground: #e8edf4;
+  --card: #121821;
+  --card-foreground: #e8edf4;
+  --muted: #1a222d;
+  --muted-foreground: #9aa6b5;
+  --border: #243041;
+  --accent: #2dd4bf;
+  --accent-foreground: #042f2e;
+  --accent-soft: #134e4a;
+  --ring: #2dd4bf;
+  --sidebar: #0f141b;
+  --sidebar-foreground: #e8edf4;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --success: #34d399;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+@layer base {
+  * {
+    @apply border-[color:var(--border)];
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[color:var(--background)] text-[color:var(--foreground)] antialiased;
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 0% -20%, rgba(13, 148, 136, 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(20, 184, 166, 0.05), transparent);
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 0% -20%, rgba(45, 212, 191, 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(45, 212, 191, 0.04), transparent);
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .card-surface {
+    @apply rounded-xl border bg-[color:var(--card)] text-[color:var(--card-foreground)];
+    box-shadow: var(--shadow);
+  }
+
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--background)];
+  }
+
+  .prose-tech {
+    @apply max-w-none leading-relaxed text-[color:var(--foreground)];
+  }
+
+  .prose-tech h1,
+  .prose-tech h2,
+  .prose-tech h3 {
+    @apply font-semibold tracking-tight mt-8 mb-3;
+  }
+
+  .prose-tech p {
+    @apply mb-4 text-[1.05rem] leading-8;
+  }
+
+  .prose-tech pre {
+    @apply overflow-x-auto rounded-lg bg-[color:var(--muted)] p-4 text-sm mb-4 font-[family-name:var(--font-geist-mono)];
+  }
+
+  .prose-tech code {
+    @apply rounded px-1.5 py-0.5 bg-[color:var(--muted)] text-sm font-[family-name:var(--font-geist-mono)];
+  }
+
+  .prose-tech pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .prose-tech a {
+    @apply text-[color:var(--accent)] underline-offset-2 hover:underline;
+  }
+
+  .prose-tech ul,
+  .prose-tech ol {
+    @apply mb-4 pl-6;
+  }
+
+  .prose-tech li {
+    @apply mb-2;
+  }
+
+  .prose-tech blockquote {
+    @apply border-l-4 border-[color:var(--accent)] pl-4 italic text-[color:var(--muted-foreground)] mb-4;
+  }
+
+  .prose-tech img {
+    @apply rounded-lg my-6 max-w-full;
+  }
 }
