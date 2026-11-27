@@ -36,8 +36,6 @@ export interface Profile {
   website_url: string | null;
   github_url: string | null;
   linkedin_url: string | null;
-  ai_coach_unlocked?: boolean;
-  stripe_customer_id?: string | null;
   created_at: string;
   updated_at: string;
 }

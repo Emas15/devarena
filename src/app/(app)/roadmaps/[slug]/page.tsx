@@ -1,11 +1,9 @@
-import { AiCoachPanel } from "@/components/roadmaps/ai-coach-panel";
 import {
   FollowRoadmapButton,
   TopicStatusControls,
 } from "@/components/roadmaps/roadmap-progress";
 import { Badge } from "@/components/ui/badge";
 import { getProfile, requireUser } from "@/lib/auth/session";
-import { isStripeConfigured } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -110,12 +108,6 @@ export default async function RoadmapDetailPage({
           </p>
         ) : null}
       </header>
-
-      <AiCoachPanel
-        roadmapSlug={slug}
-        unlocked={Boolean(profile?.ai_coach_unlocked)}
-        stripeReady={isStripeConfigured()}
-      />
 
       <section className="card-surface space-y-4 p-6">
         <h2 className="text-xl font-semibold">Career overview</h2>

@@ -20,8 +20,6 @@ export const DEMO_PROFILE = {
   website_url: null as string | null,
   github_url: null as string | null,
   linkedin_url: null as string | null,
-  ai_coach_unlocked: false,
-  stripe_customer_id: null as string | null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
