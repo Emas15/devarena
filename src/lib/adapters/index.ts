@@ -33,13 +33,13 @@ export { redditAdapter } from "@/lib/adapters/reddit";
 export { youtubeAdapter } from "@/lib/adapters/youtube";
 
 export const adapters: ContentAdapter[] = [
-  devtoAdapter,
-  hashnodeAdapter,
-  hackernewsAdapter,
-  mediumAdapter,
-  substackAdapter,
   redditAdapter,
   youtubeAdapter,
+  hackernewsAdapter,
+  mediumAdapter,
+  devtoAdapter,
+  hashnodeAdapter,
+  substackAdapter,
 ];
 
 export const ALL_ADAPTERS = adapters;

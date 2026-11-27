@@ -221,25 +221,25 @@ export const redditAdapter: ContentAdapter = {
       const errors: string[] = [];
       const seen = new Set<string>();
 
-      for (const sub of subreddits) {
-        for (const sort of ["hot", "new"] as const) {
-          try {
-            const children = token
-              ? await fetchListingOAuth(token, sub, sort)
-              : await fetchListingPublic(sub, sort);
-            for (const child of children) {
-              const mapped = mapPost(child, slugs);
-              if (!mapped) continue;
-              const key = mapped.externalId || mapped.originalUrl;
-              if (seen.has(key)) continue;
-              seen.add(key);
-              items.push(mapped);
-            }
-          } catch (e) {
-            errors.push(
-              `r/${sub}/${sort}: ${e instanceof Error ? e.message : String(e)}`,
-            );
+      // Cap work so Hobby cron (60s) can finish without keys.
+      const limitedSubs = subreddits.slice(0, 8);
+      for (const sub of limitedSubs) {
+        try {
+          const children = token
+            ? await fetchListingOAuth(token, sub, "hot")
+            : await fetchListingPublic(sub, "hot");
+          for (const child of children) {
+            const mapped = mapPost(child, slugs);
+            if (!mapped) continue;
+            const key = mapped.externalId || mapped.originalUrl;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            items.push(mapped);
           }
+        } catch (e) {
+          errors.push(
+            `r/${sub}/hot: ${e instanceof Error ? e.message : String(e)}`,
+          );
         }
       }
 

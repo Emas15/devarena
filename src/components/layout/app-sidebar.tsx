@@ -58,8 +58,8 @@ export function AppSidebar({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[color:var(--border)] bg-[color:var(--sidebar)] text-[color:var(--sidebar-foreground)] transition-transform lg:static lg:translate-x-0",
-          open ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[color:var(--border)] bg-[color:var(--sidebar)] text-[color:var(--sidebar-foreground)] transition-transform lg:static lg:translate-x-0 lg:pointer-events-auto",
+          open ? "translate-x-0" : "-translate-x-full pointer-events-none lg:pointer-events-auto"
         )}
       >
         <div className="flex h-16 items-center justify-between px-5">

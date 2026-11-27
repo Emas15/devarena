@@ -247,7 +247,8 @@ export const youtubeAdapter: ContentAdapter = {
         }
       }
     } else {
-      const channels = collectChannelIds(slugs);
+      // RSS fallback — limit channels so cron stays under Hobby timeout.
+      const channels = collectChannelIds(slugs).slice(0, 8);
       for (const channelId of channels) {
         try {
           const videos = await fetchChannelRss(channelId, slugs);
@@ -261,6 +262,11 @@ export const youtubeAdapter: ContentAdapter = {
             `channel ${channelId}: ${e instanceof Error ? e.message : String(e)}`,
           );
         }
+      }
+      if (channels.length === 0 && items.length === 0) {
+        errors.push(
+          "No INTEREST_YOUTUBE_CHANNELS mapped for selected interests.",
+        );
       }
     }
 

@@ -160,10 +160,10 @@ export default async function HomePage() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           {(roadmaps.data ?? []).map((roadmap) => (
-            <Link
+            <a
               key={roadmap.id}
-              href={`/roadmaps/${roadmap.slug}`}
-              className="card-surface p-5 transition-colors hover:border-[color:var(--accent)]/40"
+              href={`/roadmaps/${encodeURIComponent(String(roadmap.slug))}`}
+              className="card-surface block p-5 transition-colors hover:border-[color:var(--accent)]/40"
             >
               <div className="flex items-start gap-3">
                 <Map className="mt-0.5 h-4 w-4 text-[color:var(--accent)]" />
@@ -174,7 +174,7 @@ export default async function HomePage() {
                   </p>
                 </div>
               </div>
-            </Link>
+            </a>
           ))}
           {!roadmaps.data?.length ? (
             <EmptyState

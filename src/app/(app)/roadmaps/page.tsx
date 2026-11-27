@@ -66,12 +66,12 @@ export default async function RoadmapsPage({
       </div>
 
       {(roadmaps ?? []).length ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="relative z-10 grid gap-4 md:grid-cols-2">
           {(roadmaps ?? []).map((roadmap) => (
-            <Link
+            <a
               key={roadmap.id}
-              href={`/roadmaps/${roadmap.slug}`}
-              className="card-surface p-5 transition-colors hover:border-[color:var(--accent)]/40"
+              href={`/roadmaps/${encodeURIComponent(String(roadmap.slug))}`}
+              className="card-surface block p-5 transition-colors hover:border-[color:var(--accent)]/40"
             >
               <p className="text-xs uppercase tracking-wide text-[color:var(--muted-foreground)]">
                 {roadmap.category}
@@ -84,7 +84,7 @@ export default async function RoadmapsPage({
                 {roadmap.estimated_months ? `~${roadmap.estimated_months} months · ` : ""}
                 {roadmap.difficulty}
               </p>
-            </Link>
+            </a>
           ))}
         </div>
       ) : (
